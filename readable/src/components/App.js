@@ -7,6 +7,7 @@ import DownArrowIcon from 'react-icons/lib/fa/arrow-circle-down'
 import HomeIcon from 'react-icons/lib/fa/home'
 import Moment from 'react-moment'
 import {
+  getCategories,
   getPosts,
   deletePost,
   updateVote,
@@ -24,7 +25,11 @@ import {
 
 class App extends Component {
   componentDidMount() {
+    // Actions trigger reducers which keep the state up-to-date
+    // This adds posts to the redux state on mount of component
     this.props.getPosts(this.props.match.params.category)
+    // This adds categories to the redux state on mount of component
+    this.props.getCategories()
   }
 
   generatePostsList = () => {
@@ -128,6 +133,26 @@ class App extends Component {
                 <HomeIcon className="homeIcon" />
               </Link>
               <DropdownButton
+                id="categories"
+                bsStyle="default"
+                title="Category"
+                onSelect={eventKey => {
+                  this.props.sortByPosts(eventKey)
+                }}
+              >
+              {
+                this.props.categories.map((category, index) => (
+                  <MenuItem
+                    key={index.toString()}
+                    eventKey={category.name.toString()}
+                    href={category.path.toString()}
+                  >
+                    {category.name}
+                  </MenuItem>
+                ))
+              }
+              </DropdownButton>
+              <DropdownButton
                 id="sort"
                 bsStyle="default"
                 title="Sort order"
@@ -173,6 +198,7 @@ class App extends Component {
 
 function mapStateToProps(state) {
   return {
+    categories: state.categories,
     posts: state.posts.posts,
     sortBy: state.posts.sortBy,
   }
@@ -180,6 +206,7 @@ function mapStateToProps(state) {
 
 function mapDispatchToProps(dispatch) {
   return {
+    getCategories: data => dispatch(getCategories(data)),
     getPosts: data => dispatch(getPosts(data)),
     deletePost: data => dispatch(deletePost(data)),
     updateVote: data => dispatch(updateVote(data)),
